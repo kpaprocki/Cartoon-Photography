@@ -26,10 +26,10 @@ w     = 5;         % bilateral filter half-width
 sigma = [3 0.1];   % bilateral filter standard deviations
 
 % Set image abstraction paramters.
-max_gradient      = 0.2;    % maximum gradient (for edges)
-sharpness_levels  = [3 14]; % soft quantization sharpness
+max_gradient      = 0.3;    % maximum gradient (for edges)
+sharpness_levels  = [3 1]; % soft quantization sharpness
 quant_levels      = 8;      % number of quantization levels
-min_edge_strength = 0.3;    % minimum gradient (for edges)
+min_edge_strength = 0.7;    % minimum gradient (for edges)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
