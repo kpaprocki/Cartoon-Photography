@@ -1,6 +1,8 @@
 clear
 clc
 
+addpath('Bilateral Filtering');
+
 pic = double(imread('portrait.jpg'))/255;
 
 % Set bilateral filter parameters.
@@ -33,21 +35,21 @@ imshow(bw);
 color = zeros(size(bw, 1),size(bw, 2));
 
 % ---- Colors ( as hex ) c1 is lightest, c4 darkest
-c11 = hex2dec('ff');
-c12 = hex2dec('cc');
-c13 = hex2dec('99');
+c11 = hex2dec('ff')/255;
+c12 = hex2dec('cc')/255;
+c13 = hex2dec('99')/255;
     
-c21 = hex2dec('99');
-c22 = hex2dec('cc');
-c23 = hex2dec('ff');
+c21 = hex2dec('99')/255;
+c22 = hex2dec('cc')/255;
+c23 = hex2dec('ff')/255;
     
-c31 = hex2dec('66');
-c32 = hex2dec('00');
-c33 = hex2dec('00');
+c31 = hex2dec('66')/255;
+c32 = hex2dec('00')/255;
+c33 = hex2dec('00')/255;
     
-c41 = hex2dec('00');
-c42 = hex2dec('00');
-c43 = hex2dec('66');
+c41 = hex2dec('00')/255;
+c42 = hex2dec('00')/255;
+c43 = hex2dec('66')/255;
 
 for i=1:size(bw, 1)
     for j=1:size(bw, 2)
