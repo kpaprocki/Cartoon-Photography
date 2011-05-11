@@ -4,7 +4,7 @@ clc
 addpath('Bilateral Filtering');
 
 % Set parameters
-IMAGE = 'obama.jpg';
+IMAGE = 'ellis.gif';
 
 % Threshold parameters, HI is high intensity (white)
 THRESH_HI  = .68;
@@ -29,39 +29,6 @@ C4_R = '00';
 C4_G = '32';
 C4_B = '4d';
 
-
-% Set bilateral filter parameters.
-w     = 5;       % bilateral filter half-width
-sigma = [3 0.1]; % bilateral filter standard deviations
-
-pic = double(imread(IMAGE))/255;
-
-%bflt = bfilter2(pic,w,sigma);
-
-% Apply bilateral filter for a "cartoon" effect.
-cartoon = cartoon(pic);
-
-%imshow(bflt);
-%figure;
-%imshow(cartoon);
-imwrite(cartoon, 'step_cartoon.jpg', jpg
-
-bw = rgb2gray(cartoon);
-
-% bw_cartn = cartoon(bw);
-
-%figure;
-%imshow(bw);
-
-
-% Try the filter again
-%bflt2 = bfilter2(bflt,w,sigma);
-
-%figure;
-%imshow(bflt2);
-
-color = zeros(size(bw, 1),size(bw, 2));
-
 % ---- Colors ( as hex ) c1 is lightest, c4 darkest
 c11 = hex2dec(C1_R)/255;
 c12 = hex2dec(C1_G)/255;
@@ -78,6 +45,70 @@ c33 = hex2dec(C3_B)/255;
 c41 = hex2dec(C4_R)/255;
 c42 = hex2dec(C4_G)/255;
 c43 = hex2dec(C4_B)/255;
+
+
+% Set bilateral filter parameters.
+w     = 5;       % bilateral filter half-width
+sigma = [3 0.1]; % bilateral filter standard deviations
+ 
+% ----- GIF support ------
+[imIn, cmap] = imread(IMAGE, 'gif');
+
+imshow(imIn, cmap);
+
+for i = 1:256
+    sum = (cmap[1] + cmap[2] + cmap3[3])/3;
+        % basic thresholding
+    if(bw(i, j) > THRESH_HI)
+        color(i, j, 1) = c11;
+        color(i, j, 2) = c12;
+        color(i, j, 3) = c13;
+    elseif(bw(i, j) > THRESH_MED)
+        color(i, j, 1) = c21;
+        color(i, j, 2) = c22;
+        color(i, j, 3) = c23;
+    elseif(bw(i, j) > THRESH_LO)
+        color(i, j, 1) = c31;
+        color(i, j, 2) = c32;
+        color(i, j, 3) = c33;
+    else
+        color(i, j, 1) = c41;
+        color(i, j, 2) = c42;
+        color(i, j, 3) = c43;
+    end
+end
+
+imshow(imIn, cmap);
+
+% ----- JPEG support ------
+%pic = double(imread(IMAGE, 'gif'))/255;
+%cart = bfilter2(pic,w,sigma);
+%cartoon = bfilter2(cart,w,sigma);
+
+% Apply bilateral filter for a "cartoon" effect.
+cartoon = cartoon(pic);
+
+%imshow(bflt);
+%figure;
+%imshow(cartoon);
+%imwrite(cartoon, 'step_cartoon.png', 'png');
+
+bw = rgb2gray(cartoon);
+
+% bw_cartn = cartoon(bw);
+
+%figure;
+%imshow(bw);
+
+%imwrite(bw, 'step_bw.png', 'png');
+
+% Try the filter again
+%bflt2 = bfilter2(bflt,w,sigma);
+
+%figure;
+%imshow(bflt2);
+
+color = zeros(size(bw, 1),size(bw, 2));
 
 for i=1:size(bw, 1)
     for j=1:size(bw, 2)
@@ -131,3 +162,5 @@ end
 
 figure;
 imshow(color);
+
+%imwrite(color, 'koala_final.png', 'png');

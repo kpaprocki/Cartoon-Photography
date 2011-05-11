@@ -4,7 +4,8 @@ clc
 addpath('Bilateral Filtering');
 
 % Set parameters
-IMAGE = 'koala.jpg';
+IMAGE = 'obama.jpg';
+MASK = 'obama_mask.gif';
 
 % Threshold parameters, HI is high intensity (white)
 THRESH_HI  = .68;
@@ -29,14 +30,61 @@ C4_R = '00';
 C4_G = '32';
 C4_B = '4d';
 
+% ---- Colors ( as hex ) c1 is lightest, c4 darkest
+c11 = hex2dec(C1_R)/255;
+c12 = hex2dec(C1_G)/255;
+c13 = hex2dec(C1_B)/255;
+    
+c21 = hex2dec(C2_R)/255;
+c22 = hex2dec(C2_G)/255;
+c23 = hex2dec(C2_B)/255;
+    
+c31 = hex2dec(C3_R)/255;
+c32 = hex2dec(C3_G)/255;
+c33 = hex2dec(C3_B)/255;
+    
+c41 = hex2dec(C4_R)/255;
+c42 = hex2dec(C4_G)/255;
+c43 = hex2dec(C4_B)/255;
+
 
 % Set bilateral filter parameters.
 w     = 5;       % bilateral filter half-width
 sigma = [3 0.1]; % bilateral filter standard deviations
+ 
+% ----- GIF support ------
+%[imIn, cmap] = imread(IMAGE, 'gif');
 
+%imshow(imIn, cmap);
+
+%for i = 1:256
+%    sum = (cmap(i, 1) + cmap(i, 2) + cmap(i, 3))/3;
+        % basic thresholding
+    %if(sum > THRESH_HI)
+    %    thresh(i, 1) = c11;
+    %    thresh(i, 2) = c12;
+    %    thresh(i, 3) = c13;
+    %elseif(sum > THRESH_MED)
+    %    thresh(i, 1) = c21;
+    %    thresh(i, 2) = c22;
+    %    thresh(i, 3) = c23;
+    %elseif(sum > THRESH_LO)
+    %    thresh(i, 1) = c31;
+    %   thresh(i, 2) = c32;
+    %    thresh(i, 3) = c33;
+    %else
+    %    thresh(i, 1) = c41;
+    %    thresh(i, 2) = c42;
+    %    thresh(i, 3) = c43;
+    %    end
+%end
+
+%imshow(imIn, thresh);
+
+% ----- JPEG support ------
 pic = double(imread(IMAGE))/255;
-
-%bflt = bfilter2(pic,w,sigma);
+%cart = bfilter2(pic,w,sigma);
+%cartoon = bfilter2(cart,w,sigma);
 
 % Apply bilateral filter for a "cartoon" effect.
 cartoon = cartoon(pic);
@@ -63,34 +111,19 @@ bw = rgb2gray(cartoon);
 
 color = zeros(size(bw, 1),size(bw, 2));
 
-% ---- Colors ( as hex ) c1 is lightest, c4 darkest
-c11 = hex2dec(C1_R)/255;
-c12 = hex2dec(C1_G)/255;
-c13 = hex2dec(C1_B)/255;
-    
-c21 = hex2dec(C2_R)/255;
-c22 = hex2dec(C2_G)/255;
-c23 = hex2dec(C2_B)/255;
-    
-c31 = hex2dec(C3_R)/255;
-c32 = hex2dec(C3_G)/255;
-c33 = hex2dec(C3_B)/255;
-    
-c41 = hex2dec(C4_R)/255;
-c42 = hex2dec(C4_G)/255;
-c43 = hex2dec(C4_B)/255;
+bg_mask = imread(MASK);
 
 for i=1:size(bw, 1)
     for j=1:size(bw, 2)
         % background to c2 (left) and c3 (right)
-        if(bw(i, j) > .9)
+        if(bg_mask(i, j) < 125)
             if(j < (size(bw, 2)/2))
                 % set background
                 color(i, j, 1) = c21;
                 color(i, j, 2) = c22;
                 color(i, j, 3) = c23;
                 % make border of darkest color
-                if(bw(i, j+1) < .9)
+                if(bg_mask(i, j+1) > 125)
                     for k=j:j+10
                         color(i, k, 1) = c41;
                         color(i, k, 2) = c42;
@@ -133,4 +166,4 @@ end
 figure;
 imshow(color);
 
-imwrite(color, 'koala_final.png', 'png');
+%imwrite(color, 'koala_final.png', 'png');
