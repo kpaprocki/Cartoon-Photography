@@ -1,4 +1,4 @@
-function C = cartoon(A)
+function C = cartoon(A, w, sigma)
 
 % CARTOON Image abstraction using bilateral filtering.
 %    This function uses the bilateral filter to abstract
@@ -22,8 +22,8 @@ function C = cartoon(A)
 % Set the image abstraction parameters.
 
 % Set bilateral filter parameters.
-w     = 5;         % bilateral filter half-width
-sigma = [3 0.1];   % bilateral filter standard deviations
+%w     = 5;         % bilateral filter half-width
+%sigma = [3 0.1];   % bilateral filter standard deviations
 
 % Set image abstraction paramters.
 max_gradient      = 0.3;    % maximum gradient (for edges)

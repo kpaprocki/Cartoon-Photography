@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 11-May-2011 19:01:51
+% Last Modified by GUIDE v2.5 11-May-2011 21:28:40
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -132,10 +132,6 @@ if isnan(sigma(1))
     errordlg('Input must be a number','Error');
 end
 
-% Save the new s_spatial value
-handles.metricdata.volume = volume;
-guidata(hObject,handles)
-
 % --------------------------------------------------------------------
 function initialize_gui(fig_handle, handles, isreset)
 % If the metricdata field is present and the reset flag is false, it means
@@ -152,25 +148,71 @@ global threshMED;
 global threshLO;
 global w;
 global sigma;
+global colors;
+global calc;
+calc = 0;
 
 % Set global var defaults
 image = 'images/obama.jpg';
 mask = 'images/obama_mask.gif';
 threshHI = .68;
-threshMED = .48;
-threshLO = .25;
-w = 5;
-sigma = [3 .1];
+threshMED = .45;
+threshLO = .23;
+w = 6;
+sigma = [3 .2];
 
-%set(handles.w, 'String', handles.metricdata.density);
-%set(handles.s_spatial,  'String', handles.metricdata.volume);
-%set(handles.mass, 'String', 0);
+% ------ default Obama colors 
+C1_R = 'fc';
+C1_G = 'e4';
+C1_B = 'a8';
 
-%set(handles.unitgroup, 'SelectedObject', handles.english);
+C2_R = '71';
+C2_G = '96';
+C2_B = '9f';
 
-%set(handles.text4, 'String', 'lb/cu.in');
-%set(handles.text5, 'String', 'cu.in');
-%set(handles.text6, 'String', 'lb');
+C3_R = 'd7';
+C3_G = '1a';
+C3_B = '21';
+
+C4_R = '00';
+C4_G = '32';
+C4_B = '4d';
+
+% ---- Colors ( as hex ) c1 is lightest, c4 darkest
+c11 = hex2dec(C1_R)/255;
+c12 = hex2dec(C1_G)/255;
+c13 = hex2dec(C1_B)/255;
+
+c21 = hex2dec(C2_R)/255;
+c22 = hex2dec(C2_G)/255;
+c23 = hex2dec(C2_B)/255;
+
+c31 = hex2dec(C3_R)/255;
+c32 = hex2dec(C3_G)/255;
+c33 = hex2dec(C3_B)/255;
+
+c41 = hex2dec(C4_R)/255;
+c42 = hex2dec(C4_G)/255;
+c43 = hex2dec(C4_B)/255;
+
+% Light to Dark, RGB - from 0 to 255
+colors(1, 1) = c11;
+colors(1, 2) = c12;
+colors(1, 3) = c13;
+colors(2, 1) = c21;
+colors(2, 2) = c22;
+colors(2, 3) = c23;
+colors(3, 1) = c31;
+colors(3, 2) = c32;
+colors(3, 3) = c33;
+colors(4, 1) = c41;
+colors(4, 2) = c42;
+colors(4, 3) = c43;
+
+set(handles.c_dark,'BackgroundColor', colors(4, :));
+set(handles.c_meddark,'BackgroundColor', colors(3, :));
+set(handles.c_medlite,'BackgroundColor', colors(2, :));
+set(handles.c_lite,'BackgroundColor', colors(1, :));
 
 % Update handles structure
 guidata(handles.figure1, handles);
@@ -189,11 +231,12 @@ global threshMED;
 global threshLO;
 global w;
 global sigma;
-
+global colors;
+global calc;
 global obamafied;
 
-obamafied = obamaficator( image, mask, threshHI, threshMED, threshLO, w, sigma );
-
+obamafied = obamaficator( image, mask, threshHI, threshMED, threshLO, w, sigma, colors );
+calc = 1;
 % select on GUI view to display
 axes(handles.view);
 
@@ -205,22 +248,29 @@ function save_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 global obamafied;
+global calc;
 
+if(~calc)
+    errordlg('Nothing to save.','Error');
+else
+    [file, path, index] = uiputfile({'*.jpg',  'JPEG Image (*.jpg)';...
+        '*.gif',  'GIF Image (*.gif)';...
+        '*.png', 'PNG Image (*.png)'});
+    
+    if (ischar(file) && ischar(path))
+        addpath(path);
+        switch index
+            case 1
+                type = 'jpg';
+            case 2
+                type = 'gif';
+            case 3
+                type = 'png';
+        end
 
-[file, path, index] = uiputfile({'*.jpg',  'JPEG Image (*.jpg)';...
-    '*.gif',  'GIF Image (*.gif)';...
-    '*.png', 'PNG Image (*.png)'});
-
-switch index
-    case 1
-        type = 'jpg';
-    case 2
-        type = 'gif';
-    case 3
-        type = 'png';
+        imwrite(obamafied, strcat(path, file), type);
+    end
 end
-
-imwrite(obamafied, strcat(path, file), type);
 
 % --- Executes on button press in load_image.
 function load_image_Callback(hObject, eventdata, handles)
@@ -229,8 +279,14 @@ function load_image_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global image;
 
-[file, path] = uigetfile({'*.jpg',  'JPEG Images (*.jpg)'});
-image = strcat(path, file);
+[file, path] = uigetfile({'*.jpg',  'JPEG Images (*.jpg)'}, 'Please select an input image.');
+if  (ischar(file) && ischar(path))
+    addpath(path);
+    image = strcat(path, file);
+    set(handles.image_filename,'String',file);
+end
+
+
 
 % --- Executes on button press in load_mask.
 function load_mask_Callback(hObject, eventdata, handles)
@@ -239,8 +295,13 @@ function load_mask_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 global mask;
 
-[file, path] = uigetfile({'*.gif',  'GIF Images (*.gif)'});
-mask = strcat(pth, file);
+[file, path] = uigetfile({'*.gif',  'GIF Images (*.gif)'}, 'Please select a mask.');
+if (ischar(file) && ischar(path))
+    addpath(path);
+    mask = strcat(path, file);
+    set(handles.mask_filename,'String',file);
+end
+
 
 
 function thresh_lo_Callback(hObject, eventdata, handles)
@@ -250,6 +311,8 @@ function thresh_lo_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of thresh_lo as text
 %        str2double(get(hObject,'String')) returns contents of thresh_lo as a double
+global threshLO;
+
 threshLO = str2double(get(hObject, 'String'));
 if isnan(threshLO)
     set(hObject, 'String', 0);
@@ -354,3 +417,133 @@ function s_intensity_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in default.
+function default_Callback(hObject, eventdata, handles)
+% hObject    handle to default (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global image;
+global mask;
+global threshHI;
+global threshMED;
+global threshLO;
+global w;
+global sigma;
+global colors;
+
+image = 'images/obama.jpg';
+mask = 'images/obama_mask.gif';
+threshHI = .68;
+threshMED = .45;
+threshLO = .23;
+w = 6;
+sigma = [3 .2];
+
+% ------ default Obama colors 
+C1_R = 'fc';
+C1_G = 'e4';
+C1_B = 'a8';
+
+C2_R = '71';
+C2_G = '96';
+C2_B = '9f';
+
+C3_R = 'd7';
+C3_G = '1a';
+C3_B = '21';
+
+C4_R = '00';
+C4_G = '32';
+C4_B = '4d';
+
+% ---- Colors ( as hex ) c1 is lightest, c4 darkest
+c11 = hex2dec(C1_R)/255;
+c12 = hex2dec(C1_G)/255;
+c13 = hex2dec(C1_B)/255;
+
+c21 = hex2dec(C2_R)/255;
+c22 = hex2dec(C2_G)/255;
+c23 = hex2dec(C2_B)/255;
+
+c31 = hex2dec(C3_R)/255;
+c32 = hex2dec(C3_G)/255;
+c33 = hex2dec(C3_B)/255;
+
+c41 = hex2dec(C4_R)/255;
+c42 = hex2dec(C4_G)/255;
+c43 = hex2dec(C4_B)/255;
+
+% Light to Dark, RGB - from 0 to 1
+colors(1, 1) = c11;
+colors(1, 2) = c12;
+colors(1, 3) = c13;
+colors(2, 1) = c21;
+colors(2, 2) = c22;
+colors(2, 3) = c23;
+colors(3, 1) = c31;
+colors(3, 2) = c32;
+colors(3, 3) = c33;
+colors(4, 1) = c41;
+colors(4, 2) = c42;
+colors(4, 3) = c43;
+
+set(handles.c_dark,'BackgroundColor', colors(4, :));
+set(handles.c_meddark,'BackgroundColor', colors(3, :));
+set(handles.c_medlite,'BackgroundColor', colors(2, :));
+set(handles.c_lite,'BackgroundColor', colors(1, :));
+
+set(handles.image_filename,'String','obama.jpg');
+set(handles.mask_filename,'String','obama_mask.gif');
+set(handles.thresh_hi,'String',threshHI);
+set(handles.thresh_med,'String',threshMED);
+set(handles.thresh_lo,'String',threshLO);
+set(handles.w,'String',w);
+set(handles.s_spatial,'String',sigma(1));
+set(handles.s_intensity,'String',sigma(2));
+
+
+% --- Executes on button press in edit_dark.
+function edit_dark_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_dark (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global colors;
+
+colors(4, :) = uisetcolor('Dark');
+set(handles.c_dark,'BackgroundColor', colors(4, :));
+
+
+% --- Executes on button press in edit_meddark.
+function edit_meddark_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_meddark (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global colors;
+
+colors(3, :) = uisetcolor('Medium Dark');
+set(handles.c_meddark,'BackgroundColor', colors(3, :));
+
+
+% --- Executes on button press in edit_medlite.
+function edit_medlite_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_medlite (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global colors;
+
+colors(2, :) = uisetcolor('Medium Lite');
+set(handles.c_medlite,'BackgroundColor', colors(2, :));
+
+
+% --- Executes on button press in edit_lite.
+function edit_lite_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_lite (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global colors;
+
+colors(1, :) = uisetcolor('Lite');
+set(handles.c_lite,'BackgroundColor', colors(1, :));
