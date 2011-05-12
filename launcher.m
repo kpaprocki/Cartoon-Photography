@@ -2,10 +2,11 @@ clear
 clc
 
 addpath('Bilateral Filtering');
+addpath('images');
 
 % Set parameters
-IMAGE = 'obama.jpg';
-MASK = 'obama_mask.gif';
+IMAGE = 'images/obama.jpg';
+MASK = 'images/obama_mask.gif';
 
 % Threshold parameters, HI is high intensity (white)
 THRESH_HI  = .68;
@@ -87,14 +88,14 @@ pic = double(imread(IMAGE))/255;
 %cartoon = bfilter2(cart,w,sigma);
 
 % Apply bilateral filter for a "cartoon" effect.
-cartoon = cartoon(pic);
+%cartoon = cartoon(pic);
 
 %imshow(bflt);
 %figure;
 %imshow(cartoon);
 %imwrite(cartoon, 'step_cartoon.png', 'png');
 
-bw = rgb2gray(cartoon);
+bw = rgb2gray(pic);
 
 % bw_cartn = cartoon(bw);
 
@@ -166,4 +167,4 @@ end
 figure;
 imshow(color);
 
-%imwrite(color, 'koala_final.png', 'png');
+imwrite(color, 'obama_nofilt.png', 'png');

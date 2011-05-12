@@ -22,7 +22,7 @@ function varargout = GUI(varargin)
 
 % Edit the above text to modify the response to help GUI
 
-% Last Modified by GUIDE v2.5 10-May-2011 19:31:44
+% Last Modified by GUIDE v2.5 11-May-2011 19:01:51
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -75,8 +75,8 @@ varargout{1} = handles.output;
 
 
 % --- Executes during object creation, after setting all properties.
-function density_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to density (see GCBO)
+function w_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to w (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -88,26 +88,24 @@ end
 
 
 
-function density_Callback(hObject, eventdata, handles)
-% hObject    handle to density (see GCBO)
+function w_Callback(hObject, eventdata, handles)
+% hObject    handle to w (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of density as text
-%        str2double(get(hObject,'String')) returns contents of density as a double
-density = str2double(get(hObject, 'String'));
-if isnan(density)
+% Hints: get(hObject,'String') returns contents of w as text
+%        str2double(get(hObject,'String')) returns contents of w as a double
+global w;
+
+w = str2double(get(hObject, 'String'));
+if isnan(w)
     set(hObject, 'String', 0);
     errordlg('Input must be a number','Error');
 end
-
-% Save the new density value
-handles.metricdata.density = density;
-guidata(hObject,handles)
 
 % --- Executes during object creation, after setting all properties.
-function volume_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to volume (see GCBO)
+function s_spatial_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to s_spatial (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -119,55 +117,24 @@ end
 
 
 
-function volume_Callback(hObject, eventdata, handles)
-% hObject    handle to volume (see GCBO)
+function s_spatial_Callback(hObject, eventdata, handles)
+% hObject    handle to s_spatial (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of volume as text
-%        str2double(get(hObject,'String')) returns contents of volume as a double
-volume = str2double(get(hObject, 'String'));
-if isnan(volume)
+% Hints: get(hObject,'String') returns contents of s_spatial as text
+%        str2double(get(hObject,'String')) returns contents of s_spatial as a double
+global sigma;
+
+sigma(1) = str2double(get(hObject, 'String'));
+if isnan(sigma(1))
     set(hObject, 'String', 0);
     errordlg('Input must be a number','Error');
 end
 
-% Save the new volume value
+% Save the new s_spatial value
 handles.metricdata.volume = volume;
 guidata(hObject,handles)
-
-% --- Executes on button press in calculate.
-function calculate_Callback(hObject, eventdata, handles)
-% hObject    handle to calculate (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-mass = handles.metricdata.density * handles.metricdata.volume;
-set(handles.mass, 'String', mass);
-
-% --- Executes on button press in reset.
-function reset_Callback(hObject, eventdata, handles)
-% hObject    handle to reset (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-initialize_gui(gcbf, handles, true);
-
-% --- Executes when selected object changed in unitgroup.
-function unitgroup_SelectionChangeFcn(hObject, eventdata, handles)
-% hObject    handle to the selected object in unitgroup 
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-if (hObject == handles.english)
-    set(handles.text4, 'String', 'lb/cu.in');
-    set(handles.text5, 'String', 'cu.in');
-    set(handles.text6, 'String', 'lb');
-else
-    set(handles.text4, 'String', 'kg/cu.m');
-    set(handles.text5, 'String', 'cu.m');
-    set(handles.text6, 'String', 'kg');
-end
 
 % --------------------------------------------------------------------
 function initialize_gui(fig_handle, handles, isreset)
@@ -178,127 +145,212 @@ if isfield(handles, 'metricdata') && ~isreset
     return;
 end
 
-handles.metricdata.density = 0;
-handles.metricdata.volume  = 0;
+global image
+global mask;
+global threshHI;
+global threshMED;
+global threshLO;
+global w;
+global sigma;
 
-set(handles.density, 'String', handles.metricdata.density);
-set(handles.volume,  'String', handles.metricdata.volume);
-set(handles.mass, 'String', 0);
+% Set global var defaults
+image = 'images/obama.jpg';
+mask = 'images/obama_mask.gif';
+threshHI = .68;
+threshMED = .48;
+threshLO = .25;
+w = 5;
+sigma = [3 .1];
 
-set(handles.unitgroup, 'SelectedObject', handles.english);
+%set(handles.w, 'String', handles.metricdata.density);
+%set(handles.s_spatial,  'String', handles.metricdata.volume);
+%set(handles.mass, 'String', 0);
 
-set(handles.text4, 'String', 'lb/cu.in');
-set(handles.text5, 'String', 'cu.in');
-set(handles.text6, 'String', 'lb');
+%set(handles.unitgroup, 'SelectedObject', handles.english);
+
+%set(handles.text4, 'String', 'lb/cu.in');
+%set(handles.text5, 'String', 'cu.in');
+%set(handles.text6, 'String', 'lb');
 
 % Update handles structure
 guidata(handles.figure1, handles);
 
 
-% --- Executes on button press in pushbutton10.
-function pushbutton10_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton10 (see GCBO)
+% --- Executes on button press in calc.
+function calc_Callback(hObject, eventdata, handles)
+% hObject    handle to calc (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+global image;
+global mask;
+global threshHI;
+global threshMED;
+global threshLO;
+global w;
+global sigma;
 
-% --- Executes on button press in pushbutton11.
-function pushbutton11_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton11 (see GCBO)
+global obamafied;
+
+obamafied = obamaficator( image, mask, threshHI, threshMED, threshLO, w, sigma );
+
+% select on GUI view to display
+axes(handles.view);
+
+imshow(obamafied);
+
+% --- Executes on button press in save.
+function save_Callback(hObject, eventdata, handles)
+% hObject    handle to save (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global obamafied;
+
+
+[file, path, index] = uiputfile({'*.jpg',  'JPEG Image (*.jpg)';...
+    '*.gif',  'GIF Image (*.gif)';...
+    '*.png', 'PNG Image (*.png)'});
+
+switch index
+    case 1
+        type = 'jpg';
+    case 2
+        type = 'gif';
+    case 3
+        type = 'png';
+end
+
+imwrite(obamafied, strcat(path, file), type);
+
+% --- Executes on button press in load_image.
+function load_image_Callback(hObject, eventdata, handles)
+% hObject    handle to load_image (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global image;
+
+[file, path] = uigetfile({'*.jpg',  'JPEG Images (*.jpg)'});
+image = strcat(path, file);
+
+% --- Executes on button press in load_mask.
+function load_mask_Callback(hObject, eventdata, handles)
+% hObject    handle to load_mask (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global mask;
+
+[file, path] = uigetfile({'*.gif',  'GIF Images (*.gif)'});
+mask = strcat(pth, file);
+
+
+function thresh_lo_Callback(hObject, eventdata, handles)
+% hObject    handle to thresh_lo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-
-% --- Executes on button press in pushbutton12.
-function pushbutton12_Callback(hObject, eventdata, handles)
-% hObject    handle to pushbutton12 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-
-% --- Executes on slider movement.
-function slider6_Callback(hObject, eventdata, handles)
-% hObject    handle to slider6 (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-
+% Hints: get(hObject,'String') returns contents of thresh_lo as text
+%        str2double(get(hObject,'String')) returns contents of thresh_lo as a double
+threshLO = str2double(get(hObject, 'String'));
+if isnan(threshLO)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
 
 % --- Executes during object creation, after setting all properties.
-function slider6_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider6 (see GCBO)
+function thresh_lo_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to thresh_lo (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 
 
-% --- Executes on slider movement.
-function slider14_Callback(hObject, eventdata, handles)
-% hObject    handle to slider14 (see GCBO)
+
+function thresh_med_Callback(hObject, eventdata, handles)
+% hObject    handle to thresh_med (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+% Hints: get(hObject,'String') returns contents of thresh_med as text
+%        str2double(get(hObject,'String')) returns contents of thresh_med as a double
+global threshMED;
 
+threshMED = str2double(get(hObject, 'String'));
+if isnan(threshMED)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
 
 % --- Executes during object creation, after setting all properties.
-function slider14_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider14 (see GCBO)
+function thresh_med_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to thresh_med (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 
 
-% --- Executes on slider movement.
-function slider15_Callback(hObject, eventdata, handles)
-% hObject    handle to slider15 (see GCBO)
+
+function thresh_hi_Callback(hObject, eventdata, handles)
+% hObject    handle to thresh_hi (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+% Hints: get(hObject,'String') returns contents of thresh_hi as text
+%        str2double(get(hObject,'String')) returns contents of thresh_hi as a double
+global threshHI
 
+threshHI = str2double(get(hObject, 'String'));
+if isnan(threshHI)
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
 
 % --- Executes during object creation, after setting all properties.
-function slider15_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider15 (see GCBO)
+function thresh_hi_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to thresh_hi (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
 
 
-% --- Executes on slider movement.
-function slider16_Callback(hObject, eventdata, handles)
-% hObject    handle to slider16 (see GCBO)
+
+function s_intensity_Callback(hObject, eventdata, handles)
+% hObject    handle to s_intensity (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'Value') returns position of slider
-%        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
+% Hints: get(hObject,'String') returns contents of s_intensity as text
+%        str2double(get(hObject,'String')) returns contents of s_intensity as a double
+global sigma;
 
+sigma(2) = str2double(get(hObject, 'String'));
+if isnan(sigma(2))
+    set(hObject, 'String', 0);
+    errordlg('Input must be a number','Error');
+end
 
 % --- Executes during object creation, after setting all properties.
-function slider16_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to slider16 (see GCBO)
+function s_intensity_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to s_intensity (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
-% Hint: slider controls usually have a light gray background.
-if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor',[.9 .9 .9]);
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
 end
